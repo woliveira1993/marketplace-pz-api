@@ -17,6 +17,9 @@ import storeRoutes from './modules/store/store.routes.js';
 import webhooksRoutes from './modules/webhooks/webhooks.routes.js';
 import serverRoutes from './modules/server/server.routes.js';
 import cronsRoutes from './modules/crons/crons.routes.js';
+import subscriptionPlansRoutes from './modules/subscription-plans/subscription-plans.routes.js';
+import subscriptionsRoutes from './modules/subscriptions/subscriptions.routes.js';
+import subscriptionAutomationsRoutes from './modules/subscription-automations/subscription-automations.routes.js';
 import { config } from './config.js';
 
 export async function buildServer() {
@@ -66,6 +69,9 @@ export async function buildServer() {
   fastify.register(webhooksRoutes, { prefix: '/webhooks' });
   fastify.register(serverRoutes, { prefix: '/api/server' });
   fastify.register(cronsRoutes, { prefix: '/api/crons' });
+  fastify.register(subscriptionPlansRoutes, { prefix: '/api/subscription-plans' });
+  fastify.register(subscriptionsRoutes, { prefix: '/api/subscriptions' });
+  fastify.register(subscriptionAutomationsRoutes, { prefix: '/api/subscription-automations' });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));

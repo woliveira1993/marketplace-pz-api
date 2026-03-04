@@ -71,10 +71,48 @@ export function unscheduleJob(cronId: number): void {
   }
 }
 
+async function checkExpiredSubscriptions(): Promise<void> {
+  const { fireSubscriptionAutomations } = await import('./subscription.service.js');
+
+  // Find subscriptions that are 'active' but past next_payment_due by more than 1 day
+  const now = new Date();
+  const overdueThreshold = new Date(now);
+  overdueThreshold.setDate(overdueThreshold.getDate() - 1);
+
+  const expired = await db('subscriptions')
+    .where('status', 'active')
+    .where('next_payment_due', '<', overdueThreshold)
+    .join('subscription_plans', 'subscriptions.plan_id', 'subscription_plans.id')
+    .select('subscriptions.*', 'subscription_plans.name as plan_name');
+
+  for (const sub of expired) {
+    await db('subscriptions').where('id', sub.id).update({
+      status: 'expired',
+      updated_at: new Date(),
+    });
+
+    await fireSubscriptionAutomations(sub.tenant_id, 'subscription_expired', {
+      username: sub.username,
+      email: sub.email,
+      plan_name: sub.plan_name,
+    }).catch(() => {});
+
+    console.info(`[subscription-check] Assinatura ${sub.id} (${sub.username}) expirada e automações disparadas`);
+  }
+}
+
 export async function initCronScheduler(): Promise<void> {
   const crons = await db('server_crons').where('enabled', true) as ServerCron[];
   for (const cronJob of crons) {
     scheduleJob(cronJob);
   }
   console.info(`[cron] Scheduler iniciado com ${crons.length} job(s) ativos`);
+
+  // System job: check expired subscriptions daily at midnight
+  cron.schedule('0 0 * * *', async () => {
+    await checkExpiredSubscriptions().catch((err) => {
+      console.error('[subscription-check] Error:', err);
+    });
+  });
+  console.info('[cron] Subscription expiry checker agendado (diariamente à meia-noite)');
 }

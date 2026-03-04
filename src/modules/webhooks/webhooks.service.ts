@@ -144,10 +144,15 @@ export async function handleMpWebhook(
   // Trigger RCON delivery if not already delivered
   if (!payment.delivered) {
     try {
-      await processRconDelivery(payment, tenantId);
+      if (payment.subscription_id) {
+        // Subscription payment → activate/renew subscription + run plan items RCON
+        const { processSubscriptionDelivery } = await import('../../services/subscription.service.js');
+        await processSubscriptionDelivery(payment, tenantId);
+      } else {
+        await processRconDelivery(payment, tenantId);
+      }
     } catch (err) {
       logger.error({ err, paymentId: payment.id }, 'RCON delivery failed in webhook');
-      // Do not rethrow — payment is marked approved, RCON can be retried manually
     }
   }
 }

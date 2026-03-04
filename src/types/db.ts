@@ -71,6 +71,8 @@ export interface Payment {
   tenant_id: number | null;
   item_id: number | null;
   purchased_quantity: number | null;
+  subscription_id: number | null;
+  plan_id: number | null;
 }
 
 export interface RconDeliveryLog {
@@ -139,4 +141,53 @@ export interface ServerCommandLog {
   source: 'manual' | 'cron';
   reference_id: number | null;
   executed_at: Date;
+}
+
+export interface SubscriptionPlan {
+  id: number;
+  tenant_id: number;
+  name: string;
+  description: string | null;
+  price: string; // DECIMAL as string
+  interval_days: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface PlanItem {
+  id: number;
+  plan_id: number;
+  item_id: number | null;
+  name: string | null;
+  description: string | null;
+  sort_order: number;
+}
+
+export interface Subscription {
+  id: number;
+  tenant_id: number;
+  plan_id: number;
+  username: string;
+  email: string;
+  status: 'active' | 'pending_payment' | 'cancelled' | 'expired';
+  started_at: Date | null;
+  next_payment_due: Date | null;
+  last_payment_at: Date | null;
+  cancelled_at: Date | null;
+  cancel_reason: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface SubscriptionAutomation {
+  id: number;
+  tenant_id: number;
+  trigger_event: 'subscription_cancelled' | 'subscription_expired' | 'payment_overdue';
+  name: string;
+  rcon_command: string;
+  enabled: boolean;
+  created_at: Date;
+  updated_at: Date;
 }
