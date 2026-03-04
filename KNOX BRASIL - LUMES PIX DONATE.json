@@ -1,0 +1,736 @@
+{
+  "name": "Marketplace PZ - LUMES PIX DONATE",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"error\": { \"message\": \"Erro ao criar cobrança, os campos [ username, email, lumes ] são obrigatórios!\"} }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -192,
+        -320
+      ],
+      "id": "bc838bac-dc46-440b-ab15-7b76d0d4985d",
+      "name": "ERROR INVALID FIELDS"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "payments",
+          "mode": "list",
+          "cachedResultName": "payments"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "delivered": false,
+            "external_reference": "={{ $json.external_reference }}",
+            "amount": "={{ $json.amount }}",
+            "status": "pending",
+            "lumes": "={{ $json.lumes }}",
+            "username": "={{ $json.username }}",
+            "email": "={{ $json.email }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "external_reference",
+              "displayName": "external_reference",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "transaction_id",
+              "displayName": "transaction_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delivered",
+              "displayName": "delivered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lumes",
+              "displayName": "lumes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        32,
+        128
+      ],
+      "id": "61a96c54-3f11-4798-a64f-b0053662f402",
+      "name": "CRIAR COBRANCA PENDING",
+      "credentials": {
+        "postgres": {
+          "id": "CLLaGzc7PjjOcUpo",
+          "name": "ZOMBOID_PAYMENTS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4a604de3-fd9b-4a32-a03a-73ed9ae3ce2d",
+              "leftValue": "={{ $json.access_token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        128
+      ],
+      "id": "e1fdf798-ca5b-4c47-ba04-973c4af01d7e",
+      "name": "LOGIN BEM SUCEDIDO?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "eff78976-03b7-4fca-b244-c8502fb86b7b",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "308ec3dd-435f-4051-901a-c64f83130b92",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "invalid_fields",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "b6bfd8b3-6816-46d9-859d-182ad8e75add",
+      "name": "ERRO NOS CAMPOS?"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "knox/pix",
+        "authentication": "basicAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -848,
+        -80
+      ],
+      "id": "75969184-0708-47d0-8744-dc51535ca2a0",
+      "name": "REQUEST",
+      "webhookId": "d0ed5f69-ec33-425a-9f45-72ae9db57db1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "vRMUKE8HCgVxAmTo",
+          "name": "Marketplace PZ"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mercadopago.com/oauth/token",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_secret",
+              "value": "lujKuCiavKRBeqKPnumE7qz2wHNOlyMz"
+            },
+            {
+              "name": "client_id",
+              "value": "8118134748025988"
+            },
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        240,
+        128
+      ],
+      "id": "99d11561-975c-49d8-8edd-f589f3fe99f4",
+      "name": "LOGIN MERCADO PAGO"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"error\": { \"message\": \"Erro ao criar cobrança, não foi possível autenticar no serviço [ Mercago Pago]\"} }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        688,
+        -48
+      ],
+      "id": "0ba3fd31-c763-4132-b96a-bed396a7c153",
+      "name": "ERROR LOGIN"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mercadopago.com/v1/payments",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer  {{ $json.access_token }}"
+            },
+            {
+              "name": "X-Idempotency-Key ",
+              "value": "={{ $('PREPARE_FIELDS').item.json.idempotencyId }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"transaction_amount\": {{ $('PREPARE_FIELDS').item.json.amount }},\n  \"date_of_expiration\": \"{{ $('PREPARE_FIELDS').first().json.date_of_expiration }}\",\n  \"payment_method_id\": \"pix\",\n  \"description\": \"Compra de lumes\",\n  \"external_reference\": \"{{ $('PREPARE_FIELDS').item.json.external_reference }}\",\n\"payer\": {\n    \"entity_type\": \"individual\",\n    \"type\": \"customer\",\n    \"email\": \"{{ $('PREPARE_FIELDS').first().json.email }}\"\n}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        704,
+        288
+      ],
+      "id": "c48ba903-4586-4ead-babc-cf8ffb1b9f5f",
+      "name": "CRIAR COBRANCA"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const body = $json.body || $json;\nconst username = body.username;\nconst email = body.email;\nconst lumes = parseFloat(body.lumes || 0);\n\n\nif (!username || !email || lumes <= 0) {\n  return {\n    valid: false,\n    error: \"invalid_fields\"\n  };\n}\n\nconst amount = parseFloat((lumes * 0.02).toFixed(2));\n\nreturn {\n  valid: true,\n  username,\n  email,\n  lumes,\n  amount\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        -80
+      ],
+      "id": "426f768f-c94a-45ff-988c-a834309317ab",
+      "name": "FIELDS"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const randomNum = Math.floor(Math.random() * 999999999);\n  \nconst agora = new Date();\nconst offsetBrasilia = -3;\nconst dataBrasilia = new Date(agora.getTime() + (offsetBrasilia * 60 * 60 * 1000));\n\n\nconst expiracao = new Date(dataBrasilia.getTime() + 30 * 60 * 1000);\n\n\nconst pad = (n) => n.toString().padStart(2, '0');\n\nconst yyyy = expiracao.getUTCFullYear();\nconst mm = pad(expiracao.getUTCMonth() + 1);\nconst dd = pad(expiracao.getUTCDate());\nconst hh = pad(expiracao.getUTCHours());\nconst min = pad(expiracao.getUTCMinutes());\nconst ss = pad(expiracao.getUTCSeconds());\n\nconst date_of_expiration = `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}.000-03:00`;\n\n  return {\n    idempotencyId: `${$input.first().json.email}-${randomNum}`,\n    external_reference: `${$input.first().json.username}-${randomNum}`,\n    email: $input.first().json.email,\n    username: $input.first().json.username,\n    amount: $input.first().json.amount,\n    lumes: $input.first().json.lumes,\n    date_of_expiration\n  };\n} catch (e) {\n  return { error: \"Execute os nodes anteriores primeiro!\" };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        128
+      ],
+      "id": "dd3b4fc6-ea36-4d28-bc77-37e6b53ae4a8",
+      "name": "PREPARE_FIELDS"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"pixCopiaECola\": \"{{ $('RESPONSE_MP').item.json.pixCopiaECola }}\",\n  \"transactionId\": \"{{ $json.transaction_id }}\",\n  \"qrCodeBase64\": \"{{ $('RESPONSE_MP').item.json.qrCodeBase64 }}\",\n  \"expirationDate\": \"{{ $('RESPONSE_MP').item.json.expirationDate }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1312,
+        288
+      ],
+      "id": "f4af4aa4-70f9-481c-8000-c979318c0026",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  pixCopiaECola: $input.first().json.point_of_interaction.transaction_data.qr_code,\n  transactionId: $input.first().json.point_of_interaction.transaction_data.transaction_id,\n  qrCodeBase64: $input.first().json.point_of_interaction.transaction_data.qr_code_base64,\n  expirationDate: $('PREPARE_FIELDS').first().json.date_of_expiration\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        288
+      ],
+      "id": "6b3bc60a-98fb-41c3-83b5-194b6da56fb8",
+      "name": "RESPONSE_MP"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "payments",
+          "mode": "list",
+          "cachedResultName": "payments"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "transaction_id": "={{ $('CRIAR COBRANCA').item.json.id }}",
+            "id": "={{ $('CRIAR COBRANCA PENDING').item.json.id }}",
+            "expiration_date": "={{ $json.expirationDate }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "external_reference",
+              "displayName": "external_reference",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transaction_id",
+              "displayName": "transaction_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "delivered",
+              "displayName": "delivered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "lumes",
+              "displayName": "lumes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "expiration_date",
+              "displayName": "expiration_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1120,
+        288
+      ],
+      "id": "33a8c403-8785-4e93-a533-c75919a8d2bc",
+      "name": "TRANSACTION_ID",
+      "credentials": {
+        "postgres": {
+          "id": "CLLaGzc7PjjOcUpo",
+          "name": "ZOMBOID_PAYMENTS"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "CRIAR COBRANCA PENDING": {
+      "main": [
+        [
+          {
+            "node": "LOGIN MERCADO PAGO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOGIN BEM SUCEDIDO?": {
+      "main": [
+        [
+          {
+            "node": "ERROR LOGIN",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRIAR COBRANCA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ERRO NOS CAMPOS?": {
+      "main": [
+        [
+          {
+            "node": "ERROR INVALID FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PREPARE_FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REQUEST": {
+      "main": [
+        [
+          {
+            "node": "FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOGIN MERCADO PAGO": {
+      "main": [
+        [
+          {
+            "node": "LOGIN BEM SUCEDIDO?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FIELDS": {
+      "main": [
+        [
+          {
+            "node": "ERRO NOS CAMPOS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREPARE_FIELDS": {
+      "main": [
+        [
+          {
+            "node": "CRIAR COBRANCA PENDING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRIAR COBRANCA": {
+      "main": [
+        [
+          {
+            "node": "RESPONSE_MP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESPONSE_MP": {
+      "main": [
+        [
+          {
+            "node": "TRANSACTION_ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRANSACTION_ID": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a5f007c1-eb16-45db-9f00-20fa58d76998",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f355c475c6d1659a26e4f1aa46ba196b2a8e906220725771f1e81be398390fb4"
+  },
+  "id": "PeUJNc-xv-zYvK-WAIMF6",
+  "tags": []
+}

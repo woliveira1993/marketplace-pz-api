@@ -1,0 +1,150 @@
+{
+  "name": "Marketplace PZ - BUSCAR TODOS OS PAGAMENTOS",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "knox/get-all-payments",
+        "authentication": "basicAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -32
+      ],
+      "id": "c15aa7bd-1a4d-4df4-9390-8ae2eb8f9461",
+      "name": "Webhook",
+      "webhookId": "37538b2a-840f-40fc-b206-ac66d6e88094",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "IyQFPA08BbuWrrwe",
+          "name": "Marketplace PZ - ADMIN"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        704,
+        -32
+      ],
+      "id": "d8a3976a-b78a-4946-a305-ef75a2351167",
+      "name": "RETURN"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const query = $json.query || {};\n\n// Paginação\nconst limit = parseInt(query.limit) || 10;\nconst page = parseInt(query.page) || 1;\nconst offset = (page - 1) * limit;\n\n// Search (Tratamento para busca parcial LIKE)\nconst search = query.search ? `%${query.search}%` : null;\nconst status = query.status || null;\nconst date = query.date || null;\n\nreturn {\n  search: query.search ? `%${query.search}%` : null,\n  status: query.status || null,\n  date: query.date || null,\n  limit: parseInt(query.limit) || 10,\n  offset: (parseInt(query.page || 1) - 1) * (parseInt(query.limit) || 10)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -32
+      ],
+      "id": "c474f3d9-97d4-4549-9fe3-4687009abd8b",
+      "name": "PREPARE_QUERY"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *, count(*) OVER() AS total_count\nFROM payments\nWHERE \n    -- Busca Global (Search)\n    ($1::text IS NULL OR $1 = 'null' OR username ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%' OR transaction_id::text ILIKE '%' || $1 || '%')\n    \n    -- Filtro de Status\n    AND ($2::text IS NULL OR $2 = 'null' OR status = $2)\n    \n    -- Filtro de Data (Ajustado para não dar erro de syntax)\n    AND ($3::text IS NULL OR $3 = 'null' OR created_at::date = NULLIF($3, 'null')::date)\n\nORDER BY created_at DESC\nLIMIT $4\nOFFSET $5;",
+        "options": {
+          "queryReplacement": "={{ $json.search || 'null' }},{{ $json.status || 'null' }},{{ $json.date || 'null' }},{{ parseInt($json.limit) || 10 }},{{ (parseInt($json.page || 1) - 1) * (parseInt($json.limit) || 10) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        -32
+      ],
+      "id": "d01f0c7b-92db-43e7-ac22-cb635b3a0c5f",
+      "name": "QUERY PAYMENTS",
+      "credentials": {
+        "postgres": {
+          "id": "CLLaGzc7PjjOcUpo",
+          "name": "ZOMBOID_PAYMENTS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nif (items.length === 0) return { data: [], pagination: { total: 0 } };\n\nconst total = parseInt(items[0].json.total_count);\nconst limit = $(\"PREPARE_QUERY\").first().json.limit;\nconst page = $(\"PREPARE_QUERY\").first().json.page;\n\nreturn {\n  data: items.map(i => {\n    delete i.json.total_count; // Remove o contador de cada linha\n    return i.json;\n  }),\n  pagination: {\n    total_items: total,\n    total_pages: Math.ceil(total / limit),\n    current_page: page,\n    limit: limit\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -32
+      ],
+      "id": "2b272b42-6e63-47fb-8787-9b6c8728d3a8",
+      "name": "FORMAT_RESPONSE"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "PREPARE_QUERY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREPARE_QUERY": {
+      "main": [
+        [
+          {
+            "node": "QUERY PAYMENTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QUERY PAYMENTS": {
+      "main": [
+        [
+          {
+            "node": "FORMAT_RESPONSE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMAT_RESPONSE": {
+      "main": [
+        [
+          {
+            "node": "RETURN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2a6e69c8-5d0c-4523-9c1c-6f0959a2d227",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f355c475c6d1659a26e4f1aa46ba196b2a8e906220725771f1e81be398390fb4"
+  },
+  "id": "yk0ay38MxH8iwOAmo9GEb",
+  "tags": []
+}

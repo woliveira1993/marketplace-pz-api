@@ -1,0 +1,93 @@
+export interface Tenant {
+  id: number;
+  slug: string;
+  name: string;
+  email: string;
+  password_hash: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface TenantSettings {
+  id: number;
+  tenant_id: number;
+  mp_client_id: string | null;
+  mp_client_secret_encrypted: string | null;
+  webhook_secret: string | null;
+  rcon_host: string | null;
+  rcon_port: number | null;
+  rcon_password_encrypted: string | null;
+  store_name: string | null;
+  primary_color: string | null;
+  background_color: string | null;
+  logo_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Item {
+  id: number;
+  tenant_id: number;
+  name: string;
+  description: string | null;
+  price: string; // Knex returns DECIMAL as string — unit price when allow_custom_quantity=true
+  quantity: number; // default quantity (or min display) — ignored when allow_custom_quantity=true
+  unit_label: string;
+  is_active: boolean;
+  sort_order: number;
+  allow_custom_quantity: boolean;
+  min_quantity: number | null;
+  max_quantity: number | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface RconAction {
+  id: number;
+  tenant_id: number;
+  item_id: number | null;
+  command: string;
+  exec_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Payment {
+  id: number;
+  external_reference: string;
+  transaction_id: bigint | null;
+  amount: string; // DECIMAL returned as string
+  status: string;
+  delivered: boolean;
+  created_at: Date;
+  updated_at: Date;
+  lumes: bigint | null;
+  username: string | null;
+  email: string | null;
+  error: string | null;
+  expiration_date: Date | null;
+  tenant_id: number | null;
+  item_id: number | null;
+  purchased_quantity: number | null;
+}
+
+export interface RconDeliveryLog {
+  id: number;
+  payment_id: number;
+  rcon_action_id: number | null;
+  command_sent: string;
+  response: string | null;
+  success: boolean;
+  error_message: string | null;
+  executed_at: Date;
+}
+
+export interface RefreshToken {
+  id: number;
+  tenant_id: number;
+  token_hash: string;
+  expires_at: Date;
+  revoked: boolean;
+  created_at: Date;
+}
