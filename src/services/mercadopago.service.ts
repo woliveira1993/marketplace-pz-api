@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 interface MpCredentials {
   clientId: string;
   clientSecret: string;
@@ -174,19 +176,8 @@ export async function validateMpCredentials(creds: MpCredentials): Promise<boole
 }
 
 export function buildExpirationDate(): string {
-  const now = new Date();
-  const expiration = new Date(now.getTime() + 30 * 60 * 1000); // 30 minutes
-
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  const yyyy = expiration.getUTCFullYear();
-  const mm = pad(expiration.getUTCMonth() + 1);
-  const dd = pad(expiration.getUTCDate());
-  // Adjust for Brasilia time (-03:00) — same logic as n8n workflow
-  const brasiliaOffset = -3;
-  const brasiliaDate = new Date(expiration.getTime() + brasiliaOffset * 60 * 60 * 1000);
-  const hh = pad(brasiliaDate.getUTCHours());
-  const min = pad(brasiliaDate.getUTCMinutes());
-  const ss = pad(brasiliaDate.getUTCSeconds());
-
-  return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}.000-03:00`;
+  return DateTime.now()
+    .setZone("America/Sao_Paulo")
+    .plus({ minutes: 30 })
+    .toISO({ suppressMilliseconds: true })
 }
