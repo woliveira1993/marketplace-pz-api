@@ -15,6 +15,8 @@ import rconActionsRoutes from './modules/rcon-actions/rcon-actions.routes.js';
 import paymentsRoutes from './modules/payments/payments.routes.js';
 import storeRoutes from './modules/store/store.routes.js';
 import webhooksRoutes from './modules/webhooks/webhooks.routes.js';
+import serverRoutes from './modules/server/server.routes.js';
+import cronsRoutes from './modules/crons/crons.routes.js';
 import { config } from './config.js';
 
 export async function buildServer() {
@@ -62,6 +64,8 @@ export async function buildServer() {
   fastify.register(paymentsRoutes, { prefix: '/api/payments' });
   fastify.register(storeRoutes, { prefix: '/api/store' });
   fastify.register(webhooksRoutes, { prefix: '/webhooks' });
+  fastify.register(serverRoutes, { prefix: '/api/server' });
+  fastify.register(cronsRoutes, { prefix: '/api/crons' });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));

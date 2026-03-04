@@ -119,11 +119,25 @@ export default async function itemsRoutes(fastify: FastifyInstance) {
   fastify.delete('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     const itemId = parseInt(request.params.id, 10);
 
-    const [updated] = await db('items')
-      .where('id', itemId)
-      .where('tenant_id', request.tenantId)
-      .update({ is_active: false, updated_at: new Date() })
-      .returning('*');
+      const [item] = await db('items')
+        .select('is_active')
+        .where('id', itemId)
+        .where('tenant_id', request.tenantId)
+
+      if (!item) {
+        throw new Error('Item não encontrado')
+      }
+
+      const toggleIsActive = !item.is_active
+
+      const [updated] = await db('items')
+        .where('id', itemId)
+        .where('tenant_id', request.tenantId)
+        .update({
+          is_active: toggleIsActive,
+          updated_at: new Date(),
+        })
+        .returning('*')
 
     if (!updated) return reply.code(404).send({ error: 'Item não encontrado' });
     return reply.send({ message: 'Item desativado com sucesso' });

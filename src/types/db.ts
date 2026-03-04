@@ -22,6 +22,7 @@ export interface TenantSettings {
   primary_color: string | null;
   background_color: string | null;
   logo_url: string | null;
+  wallpaper_url: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -90,4 +91,52 @@ export interface RefreshToken {
   expires_at: Date;
   revoked: boolean;
   created_at: Date;
+}
+
+export interface PzCommandParam {
+  name: string;
+  label: string;
+  type: 'text' | 'select' | 'number';
+  required: boolean;
+  options?: string[];
+  placeholder?: string;
+  default?: string;
+}
+
+export interface PzCommand {
+  id: number;
+  tenant_id: number | null;
+  name: string;
+  label: string;
+  description: string | null;
+  category: string;
+  command_template: string;
+  params: PzCommandParam[];
+  is_dangerous: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ServerCron {
+  id: number;
+  tenant_id: number;
+  name: string;
+  command: string;
+  cron_expression: string;
+  enabled: boolean;
+  last_run_at: Date | null;
+  last_status: 'success' | 'error' | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ServerCommandLog {
+  id: number;
+  tenant_id: number;
+  command: string;
+  response: string | null;
+  success: boolean;
+  source: 'manual' | 'cron';
+  reference_id: number | null;
+  executed_at: Date;
 }

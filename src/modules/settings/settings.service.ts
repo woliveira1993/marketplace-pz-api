@@ -13,6 +13,7 @@ export async function getSettings(tenantId: number) {
     primary_color: settings.primary_color,
     background_color: settings.background_color,
     logo_url: settings.logo_url,
+    wallpaper_url: (settings as any).wallpaper_url ?? null,
     mp_configured: !!(settings.mp_client_id && settings.mp_client_secret_encrypted),
     mp_client_id: settings.mp_client_id,
     rcon_configured: !!(settings.rcon_host && settings.rcon_password_encrypted),
@@ -24,7 +25,7 @@ export async function getSettings(tenantId: number) {
 
 export async function updateStoreSettings(
   tenantId: number,
-  data: { store_name?: string; primary_color?: string; background_color?: string },
+  data: { store_name?: string; primary_color?: string; background_color?: string; logo_url?: string | null; wallpaper_url?: string | null },
 ) {
   await db('tenant_settings')
     .where('tenant_id', tenantId)

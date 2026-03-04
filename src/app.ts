@@ -3,6 +3,7 @@ import { buildServer } from './server.js';
 import { config } from './config.js';
 import { db } from './database/knex.js';
 import { cleanExpiredTokens } from './modules/auth/auth.service.js';
+import { initCronScheduler } from './services/cron.service.js';
 
 async function main() {
   const fastify = await buildServer();
@@ -10,6 +11,10 @@ async function main() {
   // Clean expired refresh tokens on startup
   await cleanExpiredTokens().catch((err) => {
     fastify.log.warn(err, 'Failed to clean expired tokens on startup');
+  });
+
+  await initCronScheduler().catch((err) => {
+    fastify.log.warn(err, 'Failed to initialize cron scheduler on startup');
   });
 
   // Graceful shutdown

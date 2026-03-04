@@ -42,6 +42,7 @@ export default async function storeRoutes(fastify: FastifyInstance) {
       primary_color: settings?.primary_color ?? '#4d7c0f',
       background_color: settings?.background_color ?? '#0f1a0a',
       logo_url: settings?.logo_url ?? null,
+      wallpaper_url: settings?.wallpaper_url ?? null,
       items,
     });
   });
