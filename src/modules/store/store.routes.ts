@@ -171,8 +171,8 @@ export default async function storeRoutes(fastify: FastifyInstance) {
     if (!tenant) return reply.code(404).send({ error: 'Loja não encontrada' });
 
     const payment = await db('payments')
-      .where('transaction_id', request.params.transactionId)
-      .where('tenant_id', tenant.id)
+      .where('payments.transaction_id', request.params.transactionId)
+      .where('payments.tenant_id', tenant.id)
       .leftJoin('items', 'payments.item_id', 'items.id')
       .select(
         'payments.id',
