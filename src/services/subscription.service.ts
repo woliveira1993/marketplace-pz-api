@@ -47,20 +47,28 @@ export async function processSubscriptionDelivery(payment: Payment, tenantId: nu
   const plan = await db('subscription_plans').where('id', payment.plan_id).first() as SubscriptionPlan | undefined;
   if (!plan) return;
 
-  // Update subscription
-  const now = new Date();
-  const nextDue = new Date(now);
-  nextDue.setDate(nextDue.getDate() + plan.interval_days);
-
+  // Atomically extend next_payment_due in a single SQL UPDATE — no read-then-write,
+  // so concurrent MP retry webhooks for the same payment cannot race and overwrite each other.
+  // Rule: if next_payment_due is null or already past → extend from TODAY; otherwise → extend from next_payment_due.
   await db('subscriptions').where('id', payment.subscription_id).update({
     status: 'active',
-    started_at: db.raw('COALESCE(started_at, ?)', [now]),
-    last_payment_at: now,
-    next_payment_due: nextDue,
-    updated_at: now,
+    started_at: db.raw('COALESCE(started_at, NOW())'),
+    last_payment_at: new Date(),
+    next_payment_due: db.raw(
+      `CASE
+         WHEN next_payment_due IS NULL OR next_payment_due <= CURRENT_DATE
+           THEN CURRENT_DATE + (? * INTERVAL '1 day')
+         ELSE next_payment_due + (? * INTERVAL '1 day')
+       END`,
+      [plan.interval_days, plan.interval_days],
+    ),
+    updated_at: new Date(),
   });
 
-  // Get plan items that link to store items
+  // Mark payment as delivered RIGHT AWAY so MP retry webhooks skip this payment on subsequent calls.
+  await db('payments').where('id', payment.id).update({ delivered: true, updated_at: new Date() });
+
+  // Run RCON actions for linked plan items (best-effort — does not affect subscription dates)
   const planItems = await db('plan_items')
     .where('plan_id', plan.id)
     .whereNotNull('item_id') as PlanItem[];
@@ -114,6 +122,4 @@ export async function processSubscriptionDelivery(payment: Payment, tenantId: nu
       }
     }
   }
-
-  await db('payments').where('id', payment.id).update({ delivered: true, updated_at: new Date() });
 }

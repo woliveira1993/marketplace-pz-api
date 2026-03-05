@@ -141,18 +141,20 @@ export async function handleMpWebhook(
     return;
   }
 
-  // Trigger RCON delivery if not already delivered
+  // Trigger RCON delivery if not already delivered.
   if (!payment.delivered) {
     try {
       if (payment.subscription_id) {
-        // Subscription payment → activate/renew subscription + run plan items RCON
         const { processSubscriptionDelivery } = await import('../../services/subscription.service.js');
         await processSubscriptionDelivery(payment, tenantId);
       } else {
         await processRconDelivery(payment, tenantId);
       }
     } catch (err) {
+      console.error('[WEBHOOK] Delivery FAILED for payment', payment.id, err);
       logger.error({ err, paymentId: payment.id }, 'RCON delivery failed in webhook');
     }
+  } else {
+    console.log('[WEBHOOK] Skipping delivery — already delivered, payment', payment.id);
   }
 }

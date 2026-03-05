@@ -220,11 +220,11 @@ export default async function storeRoutes(fastify: FastifyInstance) {
 
     // Find active/pending subscription for this user
     const subscription = await db('subscriptions')
-      .where('tenant_id', tenant.id)
-      .where('username', request.query.username.trim())
-      .where('email', request.query.email.trim())
-      .whereIn('status', ['active', 'pending_payment', 'expired'])
       .join('subscription_plans', 'subscriptions.plan_id', 'subscription_plans.id')
+      .where('subscriptions.tenant_id', tenant.id)
+      .where('subscriptions.username', request.query.username.trim())
+      .where('subscriptions.email', request.query.email.trim())
+      .whereIn('subscriptions.status', ['active', 'pending_payment', 'expired'])
       .select(
         'subscriptions.id',
         'subscriptions.plan_id',
@@ -285,10 +285,6 @@ export default async function storeRoutes(fastify: FastifyInstance) {
       .where('email', result.data.email)
       .first();
 
-    if (subscription?.status === 'active') {
-      return reply.code(409).send({ error: 'Você já possui uma assinatura ativa para este plano.' });
-    }
-
     const creds = await getMpCredentials(tenant.id);
     if (!creds) return reply.code(503).send({ error: 'Pagamento não disponível no momento.' });
 
@@ -302,10 +298,11 @@ export default async function storeRoutes(fastify: FastifyInstance) {
         status: 'pending_payment',
       }).returning('*');
       subscription = newSub;
-    } else {
-      // Reactivate (expired/cancelled)
+    } else if (subscription.status === 'cancelled' || subscription.status === 'expired') {
+      // Reactivate only cancelled/expired — leave active/pending_payment untouched
       await db('subscriptions').where('id', subscription.id).update({ status: 'pending_payment', updated_at: new Date() });
     }
+    // If already active or pending_payment: do NOT change status — webhook will extend next_payment_due
 
     const amount = parseFloat(plan.price);
     const randomNum = randomBytes(4).readUInt32BE(0);

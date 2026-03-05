@@ -37,7 +37,19 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
       query = query.where((b) => b.whereLike('subscriptions.username', s).orWhereLike('subscriptions.email', s));
     }
 
-    const [{ count }] = await query.clone().count('subscriptions.id as count');
+    const [{ count }] = await db('subscriptions')
+      .where('subscriptions.tenant_id', request.tenantId)
+      .join('subscription_plans', 'subscriptions.plan_id', 'subscription_plans.id')
+      .modify((b) => {
+        if (request.query.status) b.where('subscriptions.status', request.query.status);
+        if (request.query.plan_id) b.where('subscriptions.plan_id', parseInt(request.query.plan_id!));
+        if (request.query.search) {
+          const s = `%${request.query.search}%`;
+          b.where((inner) => inner.whereLike('subscriptions.username', s).orWhereLike('subscriptions.email', s));
+        }
+      })
+      .count('subscriptions.id as count');
+
     const data = await query.orderBy('subscriptions.created_at', 'desc').limit(limit).offset(offset);
 
     return reply.send({
@@ -84,10 +96,12 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
     if (!updated) return reply.code(404).send({ error: 'Assinatura não encontrada ou já cancelada' });
 
     // Fire automations async (don't block response)
-    fireSubscriptionAutomations(request.tenantId, 'subscription_cancelled', {
-      username: updated.username,
-      email: updated.email,
-      plan_name: '',
+    db('subscription_plans').where('id', updated.plan_id).first().then((plan) => {
+      fireSubscriptionAutomations(request.tenantId, 'subscription_cancelled', {
+        username: updated.username,
+        email: updated.email,
+        plan_name: plan?.name ?? '',
+      }).catch(() => {});
     }).catch(() => {});
 
     return reply.send(updated);

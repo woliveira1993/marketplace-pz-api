@@ -23,10 +23,12 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
     let query = db('payments')
       .where('payments.tenant_id', request.tenantId)
       .leftJoin('items', 'payments.item_id', 'items.id')
+      .leftJoin('subscription_plans', 'payments.plan_id', 'subscription_plans.id')
       .select(
         'payments.*',
         'items.name as item_name',
         'items.unit_label',
+        'subscription_plans.name as plan_name',
       );
 
     if (request.query.search) {
@@ -68,10 +70,11 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
   // GET /api/payments/:id
   fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     const payment = await db('payments')
-      .where('id', parseInt(request.params.id, 10))
-      .where('tenant_id', request.tenantId)
+      .where('payments.id', parseInt(request.params.id, 10))
+      .where('payments.tenant_id', request.tenantId)
       .leftJoin('items', 'payments.item_id', 'items.id')
-      .select('payments.*', 'items.name as item_name', 'items.unit_label')
+      .leftJoin('subscription_plans', 'payments.plan_id', 'subscription_plans.id')
+      .select('payments.*', 'items.name as item_name', 'items.unit_label', 'subscription_plans.name as plan_name')
       .first();
 
     if (!payment) return reply.code(404).send({ error: 'Pagamento não encontrado' });
