@@ -179,5 +179,5 @@ export function buildExpirationDate(): string {
   return DateTime.now()
     .setZone("America/Sao_Paulo")
     .plus({ minutes: 30 })
-    .toISO({ suppressMilliseconds: true })
+    .toISO({ suppressMilliseconds: true })!;
 }
